@@ -7,6 +7,8 @@ library(grDevices)
 ## clear
 rm(list=ls())
 
+## Working directory
+setwd("./cdc-cv19-data")
 
 ## Data: downloaded 2021-01-12
 

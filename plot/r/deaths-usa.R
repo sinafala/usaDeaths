@@ -13,6 +13,7 @@ setwd("./cdc-cv19-data")
 ## Data: downloaded 2021-01-12
 
 # import all deaths data from https://data.cdc.gov/api/views/muzy-jte6/rows.csv?accessType=DOWNLOAD - https://bit.ly/3bQCeD8
+# see https://data.cdc.gov/NCHS/Weekly-Counts-of-Deaths-by-State-and-Select-Causes/muzy-jte6 - https://bit.ly/3inT1P7
 url <- "https://data.cdc.gov/api/views/muzy-jte6/rows.csv?accessType=DOWNLOAD"
 saveFile <- "./data/deaths.csv"
 download.file(url, saveFile)
@@ -21,6 +22,7 @@ deaths <- read.csv(saveFile)
 str(deaths)
 
 # import excess deaths data from https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&bom=true&format=true%20target= - https://bit.ly/3nSKMM7
+# see https://www.cdc.gov/nchs/nvss/vsrr/covid19/excess_deaths.htm (Excess deaths with and without COVID-19) - https://bit.ly/35TtQiC
 url <- "https://data.cdc.gov/api/views/xkkf-xrst/rows.csv?accessType=DOWNLOAD&bom=true&format=true%20target="
 saveFile <- "./data/excessDeaths.csv"
 download.file(url, saveFile)
@@ -28,7 +30,8 @@ excessDeaths <- read.csv(saveFile)
 # View(excessDeaths)
 str(excessDeaths)
 
-# import cv19 deaths data https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD&bom=true&format=true - https://bit.ly/2XOpJQh
+# import cv19 deaths data from https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD&bom=true&format=true - https://bit.ly/2XOpJQh
+# see https://data.cdc.gov/NCHS/Provisional-COVID-19-Death-Counts-by-Week-Ending-D/r8kw-7aab - https://bit.ly/3bWKIsi
 url <- "https://data.cdc.gov/api/views/r8kw-7aab/rows.csv?accessType=DOWNLOAD&bom=true&format=true"
 saveFile <- "./data/cv19Deaths.csv"
 download.file(url, saveFile)
@@ -108,115 +111,125 @@ expectedPlusCV19 <- deathsData2020$expectedDeaths + deathsData2020$cv19Deaths
 expectedPlusCV19[1:10] <- NA
 
 # total excess
-excessTotal <- sum(deathsData2020$excessDeaths)
+excessTotal <- round(sum(deathsData2020$excessDeaths),-3)
 excessTotal
 
 # total CV19
-CV19Total <- sum(deathsData2020$cv19Deaths)
+CV19Total <- round(sum(deathsData2020$cv19Deaths),-3)
 CV19Total
 
 # finally the plot
-y.max <- max(observed,expected,expectedPlusCV19,na.rm=TRUE)
-y.min <- min(observed,expected,expectedPlusCV19,na.rm=TRUE)
-
-pdf(file="./pdf/USA-2020-Deaths.pdf")
-par(mgp=c(3.5,0.75,0))
-
-cx <- 0.7
-lw <- 2
-scale <- 1000
-y.max <- round(y.max/scale,-1)
-y.min <- round(y.min/scale,-1)
-plot(
-  expected/scale
-  ,type="l"
-  ,col="blue"
-  ,lwd=lw
-  ,ylim=c(y.min,y.max)
-  ,xaxt="n"
-  ,yaxt="n"
-  ,xlab=""
-  ,ylab=""
-  ,main="All American Deaths 2020"
-)
-ticks.x <- 1:52
-axis(
-  1
-  ,at=ticks.x
-  ,labels=substr(deathsData2020$weekEnding,6,10)
-  ,las=2
-  ,cex.axis=cx
-)
-title(xlab="Week Ending (mm-dd)",line=3)
-for (j in c(1,ticks.x)) {
-  abline(
-    v=j
-    ,lwd=.1
+plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
+  
+  if (toPDF) {
+    pdf(file="./pdf/USA-2020-Deaths.pdf",h=4)
+  }
+  
+  par.default <- par()
+  par(mgp=c(3.5,0.75,0),oma=c(0,0,0,0),mar=c(4,3,3,0.25))
+  
+  y.max <- max(observed,expected,expectedPlusCV19,na.rm=TRUE)
+  y.min <- min(observed,expected,expectedPlusCV19,na.rm=TRUE)
+  lw <- 2
+  scale <- 1000
+  y.max <- round(y.max/scale,-1)
+  y.min <- round(y.min/scale,-1)
+  plot(
+    expected/scale
+    ,type="l"
+    ,col="blue"
+    ,lwd=lw
+    ,ylim=c(y.min,y.max)
+    ,xaxt="n"
+    ,yaxt="n"
+    ,xlab=""
+    ,ylab=""
+    ,main="Deaths during 2020 in the United States of America"
   )
+  ticks.x <- 1:52
+  axis(
+    1
+    ,at=ticks.x
+    ,labels=substr(deathsData2020$weekEnding,6,10)
+    ,las=2
+    ,cex.axis=cx
+  )
+  title(xlab="Week Ending (mm-dd)",line=3)
+  for (j in c(1,ticks.x)) {
+    abline(
+      v=j
+      ,lwd=.1
+    )
+  }
+  
+  ticks.y <- seq(y.min,y.max,5)
+  axis(
+    2
+    ,at=ticks.y
+    ,cex.axis=cx
+    ,las=2
+  )
+  title(ylab="Deaths (1000s)",line=2)
+  for (j in ticks.y) {
+    abline(
+      h=j
+      ,lwd=.1
+    )
+  }
+  
+  points(
+    expectedPlusCV19/scale
+    ,type="l"
+    ,col="red"
+    ,lwd=lw
+  )
+  
+  points(
+    observed/scale
+    ,type="l"
+    ,col="black"
+    ,lw=lw
+  )
+  
+  shadeCol=adjustcolor("gray",alpha.f=transparent)
+  polygon(
+    c(50.5,52.5,52.5,50.5)
+    ,c(y.min,y.min,y.max,y.max)
+    ,col=shadeCol
+    ,border=shadeCol
+    ,lwd=0.5
+  )
+  
+  legend(
+    x=22
+    ,y=y.max
+    # "bottomleft"
+    ,legend=c(
+      "Expected"
+      ,"Expected + CV19"
+      ,"Observed"    
+      ,"Shaded may change"
+      ,paste("Total excess >",format(excessTotal,big.mark=",",digits=1,scientific=FALSE))
+      ,paste("Total CV19 >",format(CV19Total,big.mark=",",digits=1,scientific=FALSE))
+    )
+    ,col=c("blue","red","black",shadeCol,"white","white","white")
+    ,lty=c(1,1,1,1,1,1,1)
+    ,lwd=c(lw,lw,lw,10,0,0,0)
+    ,bg="white"
+    ,cex=cexLeg
+  )
+  
+  suppressWarnings(par(par.default))
+  
+  if (toPDF) {
+    dev.off()
+  }
+  
 }
 
-ticks.y <- seq(y.min,y.max,5)
-axis(
-  2
-  ,at=ticks.y
-  ,cex.axis=cx
-  ,las=2
-)
-title(ylab="Deaths (1000s)",line=2)
-for (j in ticks.y) {
-  abline(
-    h=j
-    ,lwd=.1
-  )
-}
-
-points(
-  expectedPlusCV19/scale
-  ,type="l"
-  ,col="red"
-  ,lwd=lw
-)
-
-points(
-  observed/scale
-  ,type="l"
-  ,col="black"
-  ,lw=lw
-)
-
-shadeCol=adjustcolor("gray",alpha.f=0.6)
-polygon(
-  c(50.5,52.5,52.5,50.5)
-  ,c(y.min,y.min,y.max,y.max)
-  ,col=shadeCol
-  ,border=shadeCol
-  ,lwd=0.5
-)
-
-legend(
-  x=22
-  ,y=y.max
-  # "bottomleft"
-  ,legend=c(
-    "Expected"
-    ,"Expected + CV19"
-    ,"Observed"    
-    ,"Shaded is incomplete reporting"
-    ,paste("Total excess:",format(excessTotal,big.mark=",",digits=1,scientific=FALSE))
-    ,paste("Total CV19:",format(CV19Total,big.mark=",",digits=1,scientific=FALSE))
-  )
-  ,col=c("blue","red","black",shadeCol,"white","white","white")
-  ,lty=c(1,1,1,1,1,1,1)
-  ,lwd=c(lw,lw,lw,10,0,0,0)
-  ,bg="white"
-  ,cex=0.75
-)
-
-par(mgp=c(3,1,0))
-dev.off()
-
-
-
-
-
-
+plotDeaths(toPDF=FALSE,cx=0.75,transparent=0.8)  
+plotDeaths(toPDF=TRUE,cx=0.75,transparent=0.8)  
+  
+  
+  
+  

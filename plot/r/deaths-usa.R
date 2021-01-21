@@ -42,16 +42,15 @@ cv19Deaths <- read.csv(saveFile,stringsAsFactors=FALSE)
 # View(cv19Deaths)
 str(cv19Deaths)
 # the dates is not in standard yyy-mm-dd format: convert
-cv19Deaths$Start.week <- as.character(mdy(cv19Deaths$Start.week))
-cv19Deaths$End.Week <- as.character(mdy(cv19Deaths$End.Week))
+cv19Deaths$Start.week <- as.character(mdy(cv19Deaths$Start.Date))
+cv19Deaths$End.Week <- as.character(mdy(cv19Deaths$End.Date))
 # convert character-encoded number columns to numeric data type! *** amateurs created this file!
-cols <- 7:13
+cols <- 10:16
 cv19Deaths[,cols] <- apply(cv19Deaths[,cols],2,function(x){as.numeric(gsub(",", "",x))})
 # View(cv19Deaths)
 str(cv19Deaths)
 
 ## merge and select
-
 sql <- 'select 
           d.`Jurisdiction.of.Occurrence` as geography
           ,d.`Week.Ending.Date` as weekEnding
@@ -73,11 +72,16 @@ sql <- 'select
             and d.`Jurisdiction.of.Occurrence` = "United States"
             and trim(e.`Type`)  = "Predicted (weighted)"
             and trim(e.`Outcome`)  = "All causes"
+            and trim(c.`Group`) = "By Week"
         order by
           d.`Week.Ending.Date`'
 # sql      
 deathsData2020 <- sqldf(sql)
-View(deathsData2020)
+# check that we have 52 weeks and 1 record for each week
+s <- 'select weekEnding, count(*) from deathsData2020 group by weekEnding'
+sqldf(s)
+# check the final data file
+# View(deathsData2020)
 str(deathsData2020)
 write.csv(file="./data/deathsData2020.csv",deathsData2020)
 
@@ -116,10 +120,16 @@ expectedPlusCV19[1:10] <- NA
 # total excess
 excessTotal <- round(sum(deathsData2020$excessDeaths),-3)
 excessTotal
+excessTotalText <- as.character(format(excessTotal,big.mark=",",scientific=FALSE))
+excessTotalText
+writeLines(excessTotalText,"../latex/excessDeaths.txt")
 
 # total CV19
 CV19Total <- round(sum(deathsData2020$cv19Deaths),-3)
 CV19Total
+cv19DeathsText <- as.character(format(CV19Total,big.mark=",",scientific=FALSE))
+cv19DeathsText
+writeLines(cv19DeathsText,"../latex/cv19Deaths.txt")
 
 # finally the plot
 plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {

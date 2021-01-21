@@ -221,7 +221,7 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
       "Expected"
       ,"Expected + CV19"
       ,"Observed"    
-      ,"Shaded may change except expected"
+      ,"Shaded may change"
       ,paste("Total excess >",format(excessTotal,big.mark=",",digits=1,scientific=FALSE))
       ,paste("Total CV19 >",format(CV19Total,big.mark=",",digits=1,scientific=FALSE))
     )

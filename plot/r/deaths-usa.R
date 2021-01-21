@@ -13,7 +13,8 @@ rm(list=ls())
 ## Working directory
 setwd("./cdc-cv19-data")
 
-## Data: downloaded 2021-01-12
+
+## Data: download from CDC
 
 # import all deaths data from https://data.cdc.gov/api/views/muzy-jte6/rows.csv?accessType=DOWNLOAD - https://bit.ly/3bQCeD8
 # see https://data.cdc.gov/NCHS/Weekly-Counts-of-Deaths-by-State-and-Select-Causes/muzy-jte6 - https://bit.ly/3inT1P7
@@ -50,7 +51,10 @@ cv19Deaths[,cols] <- apply(cv19Deaths[,cols],2,function(x){as.numeric(gsub(",", 
 # View(cv19Deaths)
 str(cv19Deaths)
 
+
 ## merge and select
+
+# sql: join three datasets, restrict, and select columns
 sql <- 'select 
           d.`Jurisdiction.of.Occurrence` as geography
           ,d.`Week.Ending.Date` as weekEnding
@@ -78,10 +82,13 @@ sql <- 'select
 # sql      
 deathsData2020 <- sqldf(sql)
 # check that we have 52 weeks and 1 record for each week
-s <- 'select weekEnding, count(*) from deathsData2020 group by weekEnding'
+s <- 'select weekEnding from deathsData2020 group by weekEnding'
+sqldf(s)
+# or, check that no weekEnding is repeated, e.g. that we have the weekly and not a mix of weekly and other counts
+s <- 'select weekEnding, count(*) as count from deathsData2020 group by weekEnding having count>1'
 sqldf(s)
 # check the final data file
-# View(deathsData2020)
+View(deathsData2020)
 str(deathsData2020)
 write.csv(file="./data/deathsData2020.csv",deathsData2020)
 
@@ -89,10 +96,6 @@ write.csv(file="./data/deathsData2020.csv",deathsData2020)
 deathsData2020$weekEnding <- ymd(deathsData2020$weekEnding)
 str(deathsData2020)
 
-# If you want, remove last two weeks of incomplete data
-# tail(deathsData2020)
-# deathsData2020 <- deathsData2020[1:49,]
-# tail(deathsData2020)
 
 ## plot
 
@@ -103,7 +106,7 @@ expectedPlusExcessLo <- deathsData2020$expectedDeaths + deathsData2020$excessDea
 expectedPlusExcessLo
 expectedPlusExcessHi <- deathsData2020$expectedDeaths + deathsData2020$excessDeathsHi
 expectedPlusExcessHi
-# they use the 'Hi' values 
+# CDC uses the 'Hi' values 
 
 # observed deaths
 observed <- deathsData2020$allDeaths
@@ -114,8 +117,6 @@ expected <- deathsData2020$expectedDeaths
 # cv19
 str(deathsData2020)
 expectedPlusCV19 <- deathsData2020$expectedDeaths + deathsData2020$cv19Deaths
-# remove fist 10 weeks of CV19 deaths
-expectedPlusCV19[1:10] <- NA
 
 # total excess
 excessTotal <- round(sum(deathsData2020$excessDeaths),-3)
@@ -132,7 +133,7 @@ cv19DeathsText
 writeLines(cv19DeathsText,"../latex/cv19Deaths.txt")
 
 # finally the plot
-plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
+plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
   
   if (toPDF) {
     pdf(file="./pdf/USA-2020-Deaths.pdf",h=4)
@@ -143,7 +144,6 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
   
   y.max <- max(observed,expected,expectedPlusCV19,na.rm=TRUE)
   y.min <- min(observed,expected,expectedPlusCV19,na.rm=TRUE)
-  lw <- 2
   scale <- 1000
   y.max <- round(y.max/scale,-1)
   y.min <- round(y.min/scale,-1)
@@ -191,7 +191,14 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
   }
   
   points(
-    expectedPlusCV19/scale
+    c(expectedPlusCV19[1:11],rep(NA,42))/scale
+    ,type="l"
+    ,col="red"
+    ,lwd=lw*0.5
+  )
+  
+  points(
+    c(rep(NA,10),expectedPlusCV19[11:52])/scale
     ,type="l"
     ,col="red"
     ,lwd=lw
@@ -240,7 +247,7 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75) {
   
 }
 
-plotDeaths(toPDF=FALSE,cx=0.75,transparent=0.8)  
+plotDeaths(toPDF=FALSE,cx=0.75,transparent=0.8,lw=3)  
 plotDeaths(toPDF=TRUE,cx=0.75,transparent=0.8)  
   
   

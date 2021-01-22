@@ -191,26 +191,19 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
   }
   
   points(
-    c(expectedPlusCV19[1:11],rep(NA,42))/scale
-    ,type="l"
-    ,col="red"
-    ,lwd=lw*0.5
-  )
-  
-  points(
     c(rep(NA,10),expectedPlusCV19[11:52])/scale
     ,type="l"
     ,col="red"
     ,lwd=lw
   )
-  
-  points(
+
+    points(
     observed/scale
     ,type="l"
     ,col="black"
     ,lw=lw
   )
-  
+    
   shadeCol=adjustcolor("gray",alpha.f=transparent)
   polygon(
     c(50.5,52.5,52.5,50.5)
@@ -218,6 +211,20 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
     ,col=shadeCol
     ,border=shadeCol
     ,lwd=0.5
+  )
+    
+  points(
+    expected/scale
+    ,type="l"
+    ,col="blue"
+    ,lw=lw
+  )
+  
+  points(
+    c(expectedPlusCV19[1:11],rep(NA,42))/scale
+    ,type="l"
+    ,col="red"
+    ,lwd=lw*0.5
   )
   
   legend(
@@ -247,8 +254,8 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
   
 }
 
-plotDeaths(toPDF=FALSE,cx=0.75,transparent=0.8,lw=3)  
-plotDeaths(toPDF=TRUE,cx=0.75,transparent=0.8)  
+plotDeaths(toPDF=FALSE,cx=0.75,transparent=0.9,lw=3)  
+plotDeaths(toPDF=TRUE,cx=0.75,transparent=0.9,lw=3)  
   
   
   

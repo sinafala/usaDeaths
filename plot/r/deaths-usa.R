@@ -121,14 +121,16 @@ expectedPlusCV19 <- deathsData2020$expectedDeaths + deathsData2020$cv19Deaths
 # total excess
 excessTotal <- round(sum(deathsData2020$excessDeaths),-3)
 excessTotal
-excessTotalText <- as.character(format(excessTotal,big.mark=",",scientific=FALSE))
+# excessTotalText <- as.character(format(excessTotal,big.mark=",",scientific=FALSE)) # format with comma group separator
+excessTotalText <- as.character(format(excessTotal,scientific=FALSE))
 excessTotalText
 writeLines(excessTotalText,"../latex/excessDeaths.txt")
 
 # total CV19
 CV19Total <- round(sum(deathsData2020$cv19Deaths),-3)
 CV19Total
-cv19DeathsText <- as.character(format(CV19Total,big.mark=",",scientific=FALSE))
+# cv19DeathsText <- as.character(format(CV19Total,big.mark=",",scientific=FALSE)) # format with comma group separator
+cv19DeathsText <- as.character(format(CV19Total,scientific=FALSE))
 cv19DeathsText
 writeLines(cv19DeathsText,"../latex/cv19Deaths.txt")
 

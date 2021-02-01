@@ -106,7 +106,8 @@ expectedPlusExcessLo <- deathsData2020$expectedDeaths + deathsData2020$excessDea
 expectedPlusExcessLo
 expectedPlusExcessHi <- deathsData2020$expectedDeaths + deathsData2020$excessDeathsHi
 expectedPlusExcessHi
-# CDC uses the 'Hi' values 
+# CDC uses the 'Hi' values - that is observed deaths - average number of predicted (expected) deaths
+#   NOT observed deaths - 95% quantile of predicted deaths
 
 # observed deaths
 observed <- deathsData2020$allDeaths

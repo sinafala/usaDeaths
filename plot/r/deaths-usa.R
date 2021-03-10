@@ -148,8 +148,8 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
   y.max <- max(observed,expected,expectedPlusCV19,na.rm=TRUE)
   y.min <- min(observed,expected,expectedPlusCV19,na.rm=TRUE)
   scale <- 1000
-  y.max <- round(y.max/scale,-1)
-  y.min <- round(y.min/scale,-1)
+  y.max <- ceiling(y.max/scale/5)*5
+  y.min <- trunc(y.min/scale/5)*5
   plot(
     expected/scale
     ,type="l"
@@ -207,15 +207,6 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
     ,lw=lw
   )
     
-  shadeCol=adjustcolor("gray",alpha.f=transparent)
-  polygon(
-    c(50.5,52.5,52.5,50.5)
-    ,c(y.min,y.min,y.max,y.max)
-    ,col=shadeCol
-    ,border=shadeCol
-    ,lwd=0.5
-  )
-    
   points(
     expected/scale
     ,type="l"
@@ -238,13 +229,12 @@ plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
       "Expected"
       ,"Expected + CV19"
       ,"Observed"    
-      ,"Shaded may change"
       ,paste("Total excess >",format(excessTotal,big.mark=",",digits=1,scientific=FALSE))
       ,paste("Total CV19 >",format(CV19Total,big.mark=",",digits=1,scientific=FALSE))
     )
-    ,col=c("blue","red","black",shadeCol,"white","white","white")
-    ,lty=c(1,1,1,1,1,1,1)
-    ,lwd=c(lw,lw,lw,10,0,0,0)
+    ,col=c("blue","red","black","white","white","white")
+    ,lty=c(1,1,1,1,1,1)
+    ,lwd=c(lw,lw,lw,0,0,0)
     ,bg="white"
     ,cex=cexLeg
   )
@@ -262,4 +252,124 @@ plotDeaths(toPDF=TRUE,cx=0.75,transparent=0.9,lw=3)
   
   
   
-  
+# # finally the plot
+# plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {
+#   
+#   if (toPDF) {
+#     pdf(file="./pdf/USA-2020-Deaths.pdf",h=4)
+#   }
+#   
+#   par.default <- par()
+#   par(mgp=c(3.5,0.75,0),oma=c(0,0,0,0),mar=c(4,3,3,0.25))
+#   
+#   y.max <- max(observed,expected,expectedPlusCV19,na.rm=TRUE)
+#   y.min <- min(observed,expected,expectedPlusCV19,na.rm=TRUE)
+#   scale <- 1000
+#   y.max <- ceiling(y.max/scale/5)*5
+#   y.min <- trunc(y.min/scale/5)*5
+#   plot(
+#     expected/scale
+#     ,type="l"
+#     ,col="blue"
+#     ,lwd=lw
+#     ,ylim=c(y.min,y.max)
+#     ,xaxt="n"
+#     ,yaxt="n"
+#     ,xlab=""
+#     ,ylab=""
+#     ,main="Deaths during 2020 in the United States of America"
+#   )
+#   ticks.x <- 1:52
+#   axis(
+#     1
+#     ,at=ticks.x
+#     ,labels=substr(deathsData2020$weekEnding,6,10)
+#     ,las=2
+#     ,cex.axis=cx
+#   )
+#   title(xlab="Week Ending (mm-dd)",line=3)
+#   for (j in c(1,ticks.x)) {
+#     abline(
+#       v=j
+#       ,lwd=.1
+#     )
+#   }
+#   
+#   ticks.y <- seq(y.min,y.max,5)
+#   axis(
+#     2
+#     ,at=ticks.y
+#     ,cex.axis=cx
+#     ,las=2
+#   )
+#   title(ylab="Deaths (1000s)",line=2)
+#   for (j in ticks.y) {
+#     abline(
+#       h=j
+#       ,lwd=.1
+#     )
+#   }
+#   
+#   points(
+#     c(rep(NA,10),expectedPlusCV19[11:52])/scale
+#     ,type="l"
+#     ,col="red"
+#     ,lwd=lw
+#   )
+#   
+#   points(
+#     observed/scale
+#     ,type="l"
+#     ,col="black"
+#     ,lw=lw
+#   )
+#   
+#   shadeCol=adjustcolor("gray",alpha.f=transparent)
+#   polygon(
+#     c(50.5,52.5,52.5,50.5)
+#     ,c(y.min,y.min,y.max,y.max)
+#     ,col=shadeCol
+#     ,border=shadeCol
+#     ,lwd=0.5
+#   )
+#   
+#   points(
+#     expected/scale
+#     ,type="l"
+#     ,col="blue"
+#     ,lw=lw
+#   )
+#   
+#   points(
+#     c(expectedPlusCV19[1:11],rep(NA,42))/scale
+#     ,type="l"
+#     ,col="red"
+#     ,lwd=lw*0.5
+#   )
+#   
+#   legend(
+#     x=22
+#     ,y=y.max
+#     # "bottomleft"
+#     ,legend=c(
+#       "Expected"
+#       ,"Expected + CV19"
+#       ,"Observed"    
+#       ,"Shaded may change"
+#       ,paste("Total excess >",format(excessTotal,big.mark=",",digits=1,scientific=FALSE))
+#       ,paste("Total CV19 >",format(CV19Total,big.mark=",",digits=1,scientific=FALSE))
+#     )
+#     ,col=c("blue","red","black",shadeCol,"white","white","white")
+#     ,lty=c(1,1,1,1,1,1,1)
+#     ,lwd=c(lw,lw,lw,10,0,0,0)
+#     ,bg="white"
+#     ,cex=cexLeg
+#   )
+#   
+#   suppressWarnings(par(par.default))
+#   
+#   if (toPDF) {
+#     dev.off()
+#   }
+#   
+# }  

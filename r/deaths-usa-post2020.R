@@ -11,10 +11,6 @@ library(grDevices)
 ## clear
 rm(list=ls())
 
-## Working directory
-setwd("./cdc-cv19-data")
-
-
 ## Data: download from CDC
 
 # import all deaths data from https://data.cdc.gov/api/views/muzy-jte6/rows.csv?accessType=DOWNLOAD - https://bit.ly/3bQCeD8
@@ -126,7 +122,6 @@ excessTotal
 # excessTotalText <- as.character(format(excessTotal,big.mark=",",scientific=FALSE)) # format with comma group separator
 excessTotalText <- as.character(format(excessTotal,scientific=FALSE))
 excessTotalText
-writeLines(excessTotalText,"../latex/excessDeaths.txt")
 
 # total CV19
 CV19Total <- round(sum(deathsData$cv19Deaths),-3)
@@ -134,7 +129,6 @@ CV19Total
 # cv19DeathsText <- as.character(format(CV19Total,big.mark=",",scientific=FALSE)) # format with comma group separator
 cv19DeathsText <- as.character(format(CV19Total,scientific=FALSE))
 cv19DeathsText
-writeLines(cv19DeathsText,"../latex/cv19Deaths.txt")
 
 # finally the plot
 plotDeaths <- function(toPDF=FALSE,cx=0.7,transparent=0.8,cexLeg=0.75,lw=2) {

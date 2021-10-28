@@ -1,3 +1,4 @@
 synch.sh
 .*
 !/.gitignore
+.Rproj.user
